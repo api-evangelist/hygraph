@@ -1,0 +1,71 @@
+aid: hygraph
+name: Hygraph
+description: "GraphQL-native headless CMS (formerly GraphCMS) with content federation, content environments, webhooks, and a flexible GraphQL Content API for building headless applications."
+type: Index
+image: https://kinlane-productions2.s3.amazonaws.com/apis-json/apis-json-logo.jpg
+created: '2026-06-14'
+modified: '2026-06-14'
+url: https://raw.githubusercontent.com/api-evangelist/hygraph/refs/heads/main/apis.yml
+specificationVersion: '0.19'
+tags:
+  - GraphQL
+  - Headless CMS
+  - Content Management
+  - Content Federation
+  - Webhooks
+  - Digital Experience
+apis:
+  - aid: hygraph:graphql-content-api
+    name: Hygraph GraphQL Content API
+    description: "Native GraphQL API that auto-generates queries, mutations, and real-time subscriptions from the project content schema. Supports content federation, multi-environment delivery, and a high-performance CDN cache endpoint for published content."
+    humanURL: https://hygraph.com/docs/api-reference/content-api
+    baseURL: https://api.hygraph.com
+    tags:
+      - GraphQL
+      - Content Delivery
+      - Headless CMS
+      - Content Federation
+    properties:
+      - type: Documentation
+        url: https://hygraph.com/docs/api-reference/content-api
+      - type: GraphQL
+        url: https://raw.githubusercontent.com/api-evangelist/hygraph/refs/heads/main/graphql/hygraph-graphql.md
+  - aid: hygraph:management-api
+    name: Hygraph Management API
+    description: "GraphQL API for programmatically managing Hygraph project schema, content models, fields, environments, webhooks, and API tokens. Used for schema migrations and automated project provisioning."
+    humanURL: https://hygraph.com/docs/api-reference/management-api
+    baseURL: https://management.hygraph.com
+    tags:
+      - GraphQL
+      - Schema Management
+      - Automation
+      - DevOps
+    properties:
+      - type: Documentation
+        url: https://hygraph.com/docs/api-reference/management-api
+common:
+  - type: Website
+    url: https://hygraph.com
+  - type: Documentation
+    url: https://hygraph.com/docs
+  - type: LinkedIn
+    url: https://www.linkedin.com/company/hygraph
+  - type: GitHubOrganization
+    url: https://github.com/hygraph
+  - type: Blog
+    url: https://hygraph.com/blog
+  - type: Pricing
+    url: https://hygraph.com/pricing
+  - type: Plans
+    url: https://raw.githubusercontent.com/api-evangelist/hygraph/refs/heads/main/plans/hygraph-plans.md
+  - type: RateLimits
+    url: https://raw.githubusercontent.com/api-evangelist/hygraph/refs/heads/main/rate-limits/hygraph-rate-limits.md
+  - type: FinOps
+    url: https://raw.githubusercontent.com/api-evangelist/hygraph/refs/heads/main/finops/hygraph-finops.md
+  - type: Changelog
+    url: https://hygraph.com/changelog
+  - type: Learn
+    url: https://hygraph.com/learn
+maintainers:
+  - FN: Kin Lane
+    email: kin@apievangelist.com
