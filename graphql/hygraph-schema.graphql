@@ -1,0 +1,941 @@
+"""
+Hygraph (formerly GraphCMS) — GraphQL Content API Base Schema
+Source: https://github.com/hygraph/gatsby-source-graphcms (graphcms-fragments)
+        https://github.com/hygraph/management-sdk (src/generated/schema.ts)
+        https://hygraph.com/docs/api-reference/content-api
+
+Every Hygraph project exposes a GraphQL Content API whose schema is composed of:
+  1. Built-in system types documented here (Asset, User, ScheduledOperation,
+     ScheduledRelease, DocumentVersion, Version, PageInfo, BatchPayload, RichText).
+  2. Project-specific content model types auto-generated from your schema
+     (e.g. Post, Product, Category) — those types are not included here.
+
+Endpoint: https://api-{region}.hygraph.com/v2/{projectId}/master
+CDN:      https://api-{region}.hygraph.com/v2/{projectId}/master?gcms-stage=PUBLISHED
+"""
+
+# ---------------------------------------------------------------------------
+# Scalars
+# ---------------------------------------------------------------------------
+
+"""ISO-8601 date-time string."""
+scalar DateTime
+
+"""ISO-8601 date string (e.g. 1989-10-07)."""
+scalar Date
+
+"""Arbitrary JSON value."""
+scalar Json
+
+"""A Long scalar for large integers."""
+scalar Long
+
+"""HTML string."""
+scalar Html
+
+"""RGB / RGBA colour value."""
+scalar RGBAHex
+
+"""A non-negative float representing colour channel intensity (0–1)."""
+scalar RGBATransparency
+
+# ---------------------------------------------------------------------------
+# Enums
+# ---------------------------------------------------------------------------
+
+"""
+Content workflow stage. DRAFT and PUBLISHED are system stages present in every
+project; additional custom stages (e.g. QA, REVIEW) are available on paid plans.
+"""
+enum Stage {
+  DRAFT
+  PUBLISHED
+}
+
+"""
+Kind of user identity associated with content changes.
+"""
+enum UserKind {
+  MEMBER
+  PAT
+  PUBLIC
+  WEBHOOK
+}
+
+"""
+Status of a ScheduledRelease.
+"""
+enum ScheduledReleaseStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+"""
+Status of a ScheduledOperation.
+"""
+enum ScheduledOperationStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+"""
+Supported webhook trigger actions.
+"""
+enum WebhookTriggerAction {
+  CREATE
+  UPDATE
+  DELETE
+  PUBLISH
+  UNPUBLISH
+}
+
+"""
+Timestamp ordering direction suffix used on auto-generated orderBy enums.
+Actual enum values are generated per field, e.g. createdAt_ASC, price_DESC.
+"""
+enum OrderDirection {
+  ASC
+  DESC
+}
+
+"""
+Visibility of a schema field in the Hygraph UI and API.
+"""
+enum VisibilityType {
+  READ_WRITE
+  READ_ONLY
+  HIDDEN
+  API_ONLY
+}
+
+"""
+Simple (scalar) field types available when building a content model.
+"""
+enum SimpleFieldType {
+  ID
+  STRING
+  RICHTEXT
+  INT
+  FLOAT
+  BOOLEAN
+  JSON
+  DATETIME
+  DATE
+  LOCATION
+  COLOR
+}
+
+"""
+Relational field types.
+"""
+enum RelationalFieldType {
+  RELATION
+  ASSET
+}
+
+# ---------------------------------------------------------------------------
+# Relay / Pagination types
+# ---------------------------------------------------------------------------
+
+"""
+Relay cursor-based pagination metadata returned by every *Connection query.
+"""
+type PageInfo {
+  """Whether there are more pages after the current page."""
+  hasNextPage: Boolean!
+  """Whether there are more pages before the current page."""
+  hasPreviousPage: Boolean!
+  """Cursor pointing to the first edge in the current page."""
+  startCursor: String
+  """Cursor pointing to the last edge in the current page."""
+  endCursor: String
+  """Number of results in the current page."""
+  pageSize: Int
+}
+
+"""
+Returned by bulk (updateMany / deleteMany) mutation operations.
+"""
+type BatchPayload {
+  """Number of content entries affected by the operation."""
+  count: Long!
+}
+
+# ---------------------------------------------------------------------------
+# Version / revision types
+# ---------------------------------------------------------------------------
+
+"""
+Uniquely identifies a document version for fetching via *Version queries.
+"""
+input VersionWhereInput {
+  id: ID!
+  stage: Stage!
+  revision: Int!
+}
+
+"""
+A point-in-time snapshot of a content entry returned by *Version queries.
+"""
+type DocumentVersion {
+  id: ID!
+  stage: Stage!
+  revision: Int!
+  createdAt: DateTime!
+  """Serialised JSON snapshot of the entry's field values at this revision."""
+  data: Json
+}
+
+# ---------------------------------------------------------------------------
+# Rich Text type
+# ---------------------------------------------------------------------------
+
+"""
+Rich text content returned in multiple formats from a single RichText field.
+"""
+type RichText {
+  """Portable Text AST (raw JSON)."""
+  raw: Json!
+  """Serialised HTML string."""
+  html: String!
+  """Plain text without markup."""
+  text: String!
+  """Markdown string."""
+  markdown: String!
+  """Portable Text JSON (alias for raw, used by some renderers)."""
+  json: Json!
+}
+
+# ---------------------------------------------------------------------------
+# Color type
+# ---------------------------------------------------------------------------
+
+"""
+An RGBA colour value returned by Color fields.
+"""
+type RGBA {
+  r: RGBAHex!
+  g: RGBAHex!
+  b: RGBAHex!
+  a: RGBATransparency!
+}
+
+"""
+A colour value returned by Color fields.
+"""
+type Color {
+  hex: String!
+  rgba: RGBA!
+  css: String!
+}
+
+# ---------------------------------------------------------------------------
+# Location type
+# ---------------------------------------------------------------------------
+
+"""
+A geographic location returned by Location fields.
+"""
+type Location {
+  latitude: Float!
+  longitude: Float!
+  distance(from: LocationInput!): Float!
+}
+
+input LocationInput {
+  latitude: Float!
+  longitude: Float!
+}
+
+# ---------------------------------------------------------------------------
+# User type
+# ---------------------------------------------------------------------------
+
+"""
+A Hygraph user identity — a project member or an API token (PAT/webhook).
+Fields confirmed from: hygraph/gatsby-source-graphcms graphcms-fragments/User.graphql
+"""
+type User {
+  """System stage the user record was fetched from."""
+  stage: Stage!
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  publishedAt: DateTime
+  """Display name of the user."""
+  name: String!
+  """URL of the user's avatar picture."""
+  picture: String
+  """Whether the user account is currently active."""
+  isActive: Boolean!
+  """Kind of identity (MEMBER, PAT, PUBLIC, WEBHOOK)."""
+  kind: UserKind!
+}
+
+# ---------------------------------------------------------------------------
+# Asset type
+# ---------------------------------------------------------------------------
+
+"""
+The Asset model is built into every Hygraph project and cannot be removed.
+Assets are localized by default and support all file types.
+Fields confirmed from: hygraph/gatsby-source-graphcms graphcms-fragments/Asset.graphql
+"""
+type Asset {
+  stage: Stage!
+  """The locale the asset was fetched in."""
+  locale: String!
+  id: ID!
+  createdAt(variation: SystemDateTimeFieldVariation): DateTime!
+  updatedAt(variation: SystemDateTimeFieldVariation): DateTime!
+  publishedAt(variation: SystemDateTimeFieldVariation): DateTime
+  createdBy: User
+  updatedBy: User
+  publishedBy: User
+  """Unique file handle (used to construct the asset URL)."""
+  handle: String!
+  """Original file name at time of upload."""
+  fileName: String!
+  """Image height in pixels (null for non-image assets)."""
+  height: Float
+  """Image width in pixels (null for non-image assets)."""
+  width: Float
+  """File size in bytes."""
+  size: Float
+  """MIME type of the file (e.g. image/jpeg, application/pdf)."""
+  mimeType: String
+  """Public CDN URL for the asset."""
+  url: String!
+  """Scheduled operations that include this asset."""
+  scheduledIn(
+    where: ScheduledOperationWhereInput
+    skip: Int
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): [ScheduledOperation!]!
+  """All locale variants of this asset."""
+  localizations(
+    locales: [String!]!
+    includeCurrent: Boolean!
+  ): [Asset!]!
+  """History of content stage snapshots for this asset."""
+  documentInStages(
+    stages: [Stage!]!
+    includeCurrent: Boolean!
+    inheritLocale: Boolean!
+  ): [Asset!]!
+}
+
+"""Argument for timestamp fields that support locale-combination queries."""
+enum SystemDateTimeFieldVariation {
+  BASE
+  LOCALIZATION
+  COMBINED
+}
+
+# ---------------------------------------------------------------------------
+# ScheduledRelease type
+# ---------------------------------------------------------------------------
+
+"""
+A named batch of scheduled operations to be applied at a future date/time.
+Fields confirmed from: hygraph/gatsby-source-graphcms graphcms-fragments/ScheduledRelease.graphql
+"""
+type ScheduledRelease {
+  stage: Stage!
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  publishedAt: DateTime
+  createdBy: User
+  updatedBy: User
+  publishedBy: User
+  """Human-readable title for this release."""
+  title: String
+  """Optional description of what this release contains."""
+  description: String
+  """Error message if the release failed to apply."""
+  errorMessage: String
+  """Whether the release is currently active."""
+  isActive: Boolean!
+  """
+  Whether the release was created implicitly (e.g. by a publish-with-delay
+  action) rather than explicitly by a user.
+  """
+  isImplicit: Boolean!
+  """The date/time at which the release will be applied."""
+  releaseAt: DateTime
+  """Current status of the release."""
+  status: ScheduledReleaseStatus!
+  """Scheduled operations bundled in this release."""
+  operations(
+    where: ScheduledOperationWhereInput
+    orderBy: ScheduledOperationOrderByInput
+    skip: Int
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): [ScheduledOperation!]!
+}
+
+# ---------------------------------------------------------------------------
+# ScheduledOperation type
+# ---------------------------------------------------------------------------
+
+"""
+A single pending content change (create, update, delete, publish, unpublish)
+that will be executed as part of a ScheduledRelease.
+Fields confirmed from: hygraph/gatsby-source-graphcms graphcms-fragments/ScheduledOperation.graphql
+"""
+type ScheduledOperation {
+  stage: Stage!
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  publishedAt: DateTime
+  createdBy: User
+  updatedBy: User
+  publishedBy: User
+  """Human-readable description of the operation."""
+  description: String
+  """Error message if the operation failed."""
+  errorMessage: String
+  """Raw JSON payload describing what will be changed."""
+  rawPayload: Json!
+  """Current status of the operation."""
+  status: ScheduledOperationStatus!
+  """The ScheduledRelease this operation belongs to."""
+  release: ScheduledRelease
+  """
+  The content entries affected by this operation. Returns a union of all
+  project-defined model types plus Asset.
+  """
+  affectedDocuments: [ScheduledOperationAffectedDocument!]!
+}
+
+"""
+Union of all document types that can be targeted by a ScheduledOperation.
+In a real project this union includes every content model type.
+The Asset type is always present; project models are added automatically.
+"""
+union ScheduledOperationAffectedDocument = Asset
+
+# ---------------------------------------------------------------------------
+# Filtering input types (system-level)
+# ---------------------------------------------------------------------------
+
+input ScheduledOperationWhereInput {
+  id: ID
+  id_not: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  status: ScheduledOperationStatus
+  status_not: ScheduledOperationStatus
+  status_in: [ScheduledOperationStatus!]
+  status_not_in: [ScheduledOperationStatus!]
+  AND: [ScheduledOperationWhereInput!]
+  OR: [ScheduledOperationWhereInput!]
+  NOT: [ScheduledOperationWhereInput!]
+}
+
+input ScheduledOperationOrderByInput {
+  """Ordering on ScheduledOperation fields, e.g. createdAt_DESC."""
+  _: String
+}
+
+input ScheduledReleaseWhereInput {
+  id: ID
+  id_not: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  status: ScheduledReleaseStatus
+  status_not: ScheduledReleaseStatus
+  status_in: [ScheduledReleaseStatus!]
+  status_not_in: [ScheduledReleaseStatus!]
+  isActive: Boolean
+  isActive_not: Boolean
+  AND: [ScheduledReleaseWhereInput!]
+  OR: [ScheduledReleaseWhereInput!]
+  NOT: [ScheduledReleaseWhereInput!]
+}
+
+input AssetWhereInput {
+  id: ID
+  id_not: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  fileName: String
+  fileName_not: String
+  fileName_in: [String!]
+  fileName_not_in: [String!]
+  fileName_contains: String
+  fileName_starts_with: String
+  fileName_ends_with: String
+  handle: String
+  handle_not: String
+  mimeType: String
+  mimeType_not: String
+  mimeType_contains: String
+  width: Float
+  width_not: Float
+  width_lt: Float
+  width_gt: Float
+  width_lte: Float
+  width_gte: Float
+  height: Float
+  height_not: Float
+  size: Float
+  size_not: Float
+  size_lt: Float
+  size_gt: Float
+  stage: Stage
+  AND: [AssetWhereInput!]
+  OR: [AssetWhereInput!]
+  NOT: [AssetWhereInput!]
+}
+
+input AssetWhereUniqueInput {
+  id: ID
+  handle: String
+}
+
+# ---------------------------------------------------------------------------
+# Connection and Edge types (Relay)
+# ---------------------------------------------------------------------------
+
+"""
+Relay-spec connection wrapper returned by every *Connection query.
+Each project model gets its own typed Connection (e.g. PostConnection).
+"""
+type AssetConnection {
+  pageInfo: PageInfo!
+  edges: [AssetEdge!]!
+  aggregate: Aggregate!
+}
+
+type AssetEdge {
+  cursor: String!
+  node: Asset!
+}
+
+"""
+Aggregate counts returned on Connection types and the productsConnection example.
+"""
+type Aggregate {
+  count: Int!
+}
+
+# ---------------------------------------------------------------------------
+# Root operation types
+# ---------------------------------------------------------------------------
+
+"""
+Root Query type.
+System queries are listed below. Each content model additionally generates:
+  {model}, {models}, {model}Version, {models}Connection
+"""
+type Query {
+  """Fetch a single Asset by unique field (id or handle)."""
+  asset(
+    where: AssetWhereUniqueInput!
+    stage: Stage! = PUBLISHED
+    locales: [String!]! = ["en"]
+  ): Asset
+
+  """Fetch multiple Assets."""
+  assets(
+    where: AssetWhereInput
+    orderBy: String
+    skip: Int
+    after: String
+    before: String
+    first: Int
+    last: Int
+    stage: Stage! = PUBLISHED
+    locales: [String!]! = ["en"]
+  ): [Asset!]!
+
+  """Relay cursor-based Asset listing."""
+  assetsConnection(
+    where: AssetWhereInput
+    orderBy: String
+    skip: Int
+    after: String
+    before: String
+    first: Int
+    last: Int
+    stage: Stage! = PUBLISHED
+    locales: [String!]! = ["en"]
+  ): AssetConnection!
+
+  """Fetch a specific revision of an Asset."""
+  assetVersion(where: VersionWhereInput!): DocumentVersion
+
+  """Fetch a single User."""
+  user(where: UserWhereUniqueInput!, stage: Stage! = PUBLISHED): User
+
+  """Fetch multiple Users."""
+  users(
+    where: UserWhereInput
+    orderBy: String
+    skip: Int
+    after: String
+    before: String
+    first: Int
+    last: Int
+    stage: Stage! = PUBLISHED
+  ): [User!]!
+
+  """Fetch a single ScheduledOperation."""
+  scheduledOperation(
+    where: ScheduledOperationWhereUniqueInput!
+    stage: Stage! = PUBLISHED
+  ): ScheduledOperation
+
+  """Fetch multiple ScheduledOperations."""
+  scheduledOperations(
+    where: ScheduledOperationWhereInput
+    orderBy: String
+    skip: Int
+    after: String
+    before: String
+    first: Int
+    last: Int
+    stage: Stage! = PUBLISHED
+  ): [ScheduledOperation!]!
+
+  """Fetch a single ScheduledRelease."""
+  scheduledRelease(
+    where: ScheduledReleaseWhereUniqueInput!
+    stage: Stage! = PUBLISHED
+  ): ScheduledRelease
+
+  """Fetch multiple ScheduledReleases."""
+  scheduledReleases(
+    where: ScheduledReleaseWhereInput
+    orderBy: String
+    skip: Int
+    after: String
+    before: String
+    first: Int
+    last: Int
+    stage: Stage! = PUBLISHED
+  ): [ScheduledRelease!]!
+
+  """
+  Relay-compliant node fetch by global ID.
+  Returns any type that implements the Node interface.
+  """
+  node(id: ID!): Node
+}
+
+"""
+Root Mutation type.
+System mutations are listed below. Each content model additionally generates
+create, update, delete, upsert, publish, unpublish, and bulk *Connection variants.
+"""
+type Mutation {
+  """Upload an Asset from a remote URL."""
+  createAsset(data: AssetCreateInput!): Asset!
+
+  """Update an existing Asset."""
+  updateAsset(
+    where: AssetWhereUniqueInput!
+    data: AssetUpdateInput!
+  ): Asset
+
+  """Delete an Asset by unique identifier."""
+  deleteAsset(where: AssetWhereUniqueInput!): Asset
+
+  """Upsert (create or update) an Asset."""
+  upsertAsset(
+    where: AssetWhereUniqueInput!
+    upsert: AssetUpsertInput!
+  ): Asset!
+
+  """Publish an Asset to one or more stages."""
+  publishAsset(
+    where: AssetWhereUniqueInput!
+    locales: [String!]
+    publishBase: Boolean
+    to: [Stage!]! = [PUBLISHED]
+  ): Asset
+
+  """Unpublish an Asset from one or more stages."""
+  unpublishAsset(
+    where: AssetWhereUniqueInput!
+    locales: [String!]
+    unpublishBase: Boolean
+    from: [Stage!]! = [PUBLISHED]
+  ): Asset
+
+  """Bulk update Assets and return a connection."""
+  updateManyAssetsConnection(
+    where: AssetWhereInput
+    data: AssetUpdateManyInput!
+    skip: Int
+    first: Int
+    last: Int
+    before: String
+    after: String
+  ): AssetConnection!
+
+  """Bulk delete Assets and return a connection."""
+  deleteManyAssetsConnection(
+    where: AssetWhereInput
+    skip: Int
+    first: Int
+    last: Int
+    before: String
+    after: String
+  ): AssetConnection!
+
+  """Bulk publish Assets and return a connection."""
+  publishManyAssetsConnection(
+    where: AssetWhereInput
+    to: [Stage!]! = [PUBLISHED]
+    locales: [String!]
+    publishBase: Boolean
+    skip: Int
+    first: Int
+    last: Int
+    before: String
+    after: String
+  ): AssetConnection!
+
+  """Bulk unpublish Assets and return a connection."""
+  unpublishManyAssetsConnection(
+    where: AssetWhereInput
+    from: [Stage!]! = [PUBLISHED]
+    locales: [String!]
+    unpublishBase: Boolean
+    skip: Int
+    first: Int
+    last: Int
+    before: String
+    after: String
+  ): AssetConnection!
+
+  """Create a ScheduledRelease."""
+  createScheduledRelease(data: ScheduledReleaseCreateInput!): ScheduledRelease!
+
+  """Update a ScheduledRelease."""
+  updateScheduledRelease(
+    where: ScheduledReleaseWhereUniqueInput!
+    data: ScheduledReleaseUpdateInput!
+  ): ScheduledRelease
+
+  """Delete a ScheduledRelease."""
+  deleteScheduledRelease(
+    where: ScheduledReleaseWhereUniqueInput!
+  ): ScheduledRelease
+}
+
+"""
+Root Subscription type.
+Available on Growth and Enterprise plans.
+Each content model generates a subscription field, e.g. post(where: ...).
+"""
+type Subscription {
+  """Subscribe to Asset changes."""
+  asset(
+    where: AssetSubscriptionWhereInput
+    stage: Stage! = PUBLISHED
+  ): AssetSubscriptionPayload
+}
+
+# ---------------------------------------------------------------------------
+# Subscription payload types
+# ---------------------------------------------------------------------------
+
+type AssetSubscriptionPayload {
+  mutation: MutationType!
+  node: Asset
+  updatedFields: [String!]
+  previousValues: AssetPreviousValues
+}
+
+type AssetPreviousValues {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  publishedAt: DateTime
+  handle: String!
+  fileName: String!
+  height: Float
+  width: Float
+  size: Float
+  mimeType: String
+  url: String!
+}
+
+enum MutationType {
+  CREATED
+  UPDATED
+  DELETED
+}
+
+input AssetSubscriptionWhereInput {
+  mutation_in: [MutationType!]
+  updatedFields_contains: String
+  updatedFields_contains_every: [String!]
+  updatedFields_contains_some: [String!]
+  AND: [AssetSubscriptionWhereInput!]
+  OR: [AssetSubscriptionWhereInput!]
+}
+
+# ---------------------------------------------------------------------------
+# Asset mutation input types
+# ---------------------------------------------------------------------------
+
+input AssetCreateInput {
+  fileName: String!
+  handle: String!
+  height: Float
+  width: Float
+  size: Float
+  mimeType: String
+  """Localizations for this asset."""
+  localizations: AssetCreateLocalizationsInput
+}
+
+input AssetCreateLocalizationsInput {
+  create: [AssetCreateLocalizationInput!]
+}
+
+input AssetCreateLocalizationInput {
+  data: AssetCreateLocalizationDataInput!
+  locale: String!
+}
+
+input AssetCreateLocalizationDataInput {
+  fileName: String!
+  handle: String!
+  height: Float
+  width: Float
+  size: Float
+  mimeType: String
+}
+
+input AssetUpdateInput {
+  fileName: String
+  handle: String
+  height: Float
+  width: Float
+  size: Float
+  mimeType: String
+  localizations: AssetUpdateLocalizationsInput
+}
+
+input AssetUpdateLocalizationsInput {
+  create: [AssetCreateLocalizationInput!]
+  update: [AssetUpdateLocalizationInput!]
+  upsert: [AssetUpsertLocalizationInput!]
+  delete: [String!]
+}
+
+input AssetUpdateLocalizationInput {
+  data: AssetUpdateLocalizationDataInput!
+  locale: String!
+}
+
+input AssetUpdateLocalizationDataInput {
+  fileName: String
+  handle: String
+  height: Float
+  width: Float
+  size: Float
+  mimeType: String
+}
+
+input AssetUpsertInput {
+  create: AssetCreateInput!
+  update: AssetUpdateInput!
+}
+
+input AssetUpsertLocalizationInput {
+  update: AssetUpdateLocalizationDataInput!
+  create: AssetCreateLocalizationDataInput!
+  locale: String!
+}
+
+input AssetUpdateManyInput {
+  fileName: String
+  height: Float
+  width: Float
+  size: Float
+  mimeType: String
+}
+
+# ---------------------------------------------------------------------------
+# ScheduledRelease mutation input types
+# ---------------------------------------------------------------------------
+
+input ScheduledReleaseCreateInput {
+  title: String
+  description: String
+  isActive: Boolean
+  releaseAt: DateTime
+}
+
+input ScheduledReleaseUpdateInput {
+  title: String
+  description: String
+  isActive: Boolean
+  releaseAt: DateTime
+}
+
+input ScheduledReleaseWhereUniqueInput {
+  id: ID
+}
+
+# ---------------------------------------------------------------------------
+# User and ScheduledOperation unique where inputs
+# ---------------------------------------------------------------------------
+
+input UserWhereUniqueInput {
+  id: ID
+}
+
+input UserWhereInput {
+  id: ID
+  id_not: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  name: String
+  name_not: String
+  name_contains: String
+  isActive: Boolean
+  isActive_not: Boolean
+  kind: UserKind
+  kind_not: UserKind
+  kind_in: [UserKind!]
+  kind_not_in: [UserKind!]
+  AND: [UserWhereInput!]
+  OR: [UserWhereInput!]
+  NOT: [UserWhereInput!]
+}
+
+input ScheduledOperationWhereUniqueInput {
+  id: ID
+}
+
+# ---------------------------------------------------------------------------
+# Node interface (Relay)
+# ---------------------------------------------------------------------------
+
+"""
+Every Hygraph content entry (including Asset, ScheduledOperation,
+ScheduledRelease) implements this interface, enabling the node(id:) root query.
+"""
+interface Node {
+  id: ID!
+  stage: Stage!
+}

@@ -1,71 +1,88 @@
-# Hygraph GraphQL Content API
+# Hygraph GraphQL API
 
-## Overview
+Hygraph (formerly GraphCMS) is a GraphQL-native headless CMS that auto-generates a full GraphQL Content API from your project's content schema. Every content model you define becomes a set of queries, mutations, and real-time subscriptions with built-in filtering, ordering, pagination, localization, and content staging.
 
-Hygraph provides a native GraphQL Content API that serves as the primary interface for querying and manipulating content in your Hygraph project. Every Hygraph project exposes a unique GraphQL endpoint that reflects your content schema automatically.
+## Authentication
 
-## Endpoint Format
+Pass a Permanent Auth Token (PAT) or Public API key as a Bearer token in the `Authorization` header:
 
-Each project receives a unique API endpoint based on its region and project identifier:
+```
+Authorization: Bearer <token>
+```
 
+Public content endpoints can be configured to allow unauthenticated access for published content via the CDN cache endpoint.
+
+## Endpoint
+
+**Standard endpoint (read/write, all stages):**
 ```
 https://api-{region}.hygraph.com/v2/{projectId}/master
 ```
 
-A read-only, high-performance CDN cache endpoint is also available:
-
+**CDN cache endpoint (high-performance, published content only):**
 ```
 https://api-{region}.hygraph.com/v2/{projectId}/master?gcms-stage=PUBLISHED
 ```
 
-CDN-cached responses are not rate-limited and offer 3–5x lower latency compared to uncached requests.
+Where `{region}` is the AWS region (e.g., `us-east-1`, `eu-central-1`) and `{projectId}` is your Hygraph project identifier. CDN-cached responses offer significantly lower latency and are not rate-limited.
 
-## API Types
+**Management API:**
+```
+https://management.hygraph.com/graphql
+```
 
-- **Content API** — Query and mutate content entries, assets, and relations.
-- **Management API** — Programmatically manage project schema, models, fields, and environments.
-- **Asset Upload API** — Upload binary assets (images, documents, videos) to Hygraph-managed storage.
-- **MCP Server API** — Secure communication channel for AI assistants and automation tooling.
+## API Design
 
-## Operations
+The Content API is project-specific. For each content model (e.g., `Post`), Hygraph auto-generates four query types and a set of mutations:
 
-### Queries
+**Queries (per model):**
+- `post(where: PostWhereUniqueInput!, stage: Stage!, locales: [Locale!]!): Post` — fetch single entry
+- `posts(where: PostWhereInput, orderBy: PostOrderByInput, skip: Int, first: Int, last: Int, after: String, before: String, locales: [Locale!]!, stage: Stage!): [Post!]!` — fetch multiple entries
+- `postVersion(where: VersionWhereInput!): DocumentVersion` — fetch specific revision
+- `postsConnection(...): PostConnection!` — Relay cursor-based pagination with edges and pageInfo
 
-- Fetch single or paginated lists of content entries by model.
-- Filter, sort, and paginate using auto-generated `where`, `orderBy`, `first`, `skip`, and `after` arguments.
-- Query rich text, assets, references, remote sources, and federated content in a single request.
+**Mutations (per model):**
+- `createPost(data: PostCreateInput!): Post!`
+- `updatePost(where: PostWhereUniqueInput!, data: PostUpdateInput!): Post`
+- `deletePost(where: PostWhereUniqueInput!): Post`
+- `upsertPost(where: PostWhereUniqueInput!, upsert: PostUpsertInput!): Post!`
+- `publishPost(where: PostWhereUniqueInput!, to: [Stage!]!, locales: [Locale!]): Post`
+- `unpublishPost(where: PostWhereUniqueInput!, from: [Stage!]!, locales: [Locale!]): Post`
+- `updateManyPostsConnection(where: PostManyWhereInput, data: PostUpdateManyInput!): PostConnection!`
+- `deleteManyPostsConnection(where: PostManyWhereInput): PostConnection!`
+- `publishManyPostsConnection(where: PostManyWhereInput, to: [Stage!]!, locales: [Locale!]): PostConnection!`
+- `unpublishManyPostsConnection(where: PostManyWhereInput, from: [Stage!]!, locales: [Locale!]): PostConnection!`
 
-### Mutations
+## System (Built-in) Types
 
-- `create{Model}` — Create a new content entry.
-- `update{Model}` — Update an existing entry by `id`.
-- `delete{Model}` — Delete an entry by `id`.
-- `publish{Model}` / `unpublish{Model}` — Move entries through the publishing workflow.
-- `upsert{Model}` — Create or update in a single operation.
+Every Hygraph project includes the following built-in types regardless of content model configuration:
 
-### Subscriptions
+- `Asset` — file storage type (images, video, documents, audio); localized by default; cannot be deleted from schema
+- `User` — represents members and API token identities who create/update/publish content
+- `ScheduledOperation` — a pending content change associated with a scheduled release
+- `ScheduledRelease` — a named batch of scheduled operations to publish/unpublish at a future time
+- `DocumentVersion` — a point-in-time snapshot of a content entry (revision history)
+- `Version` — identifies a specific document version by id, stage, and revision number
+- `PageInfo` — Relay cursor pagination metadata
+- `BatchPayload` — returned by bulk mutation operations; contains `count` of affected records
+- `RichText` — rich text field returning content as raw AST, html, markdown, text, and json
 
-Real-time GraphQL subscriptions are available on Growth and Enterprise plans, enabling live content updates pushed to clients.
+## Content Stages
 
-## Authentication
+Every project has `DRAFT` (default) and `PUBLISHED` system stages. Paid plans support additional custom stages (e.g., `QA`, `REVIEW`). Stage is used as a query argument and stored on system fields.
 
-API requests are authenticated via **Permanent Auth Tokens** or **Public API Tokens** passed as an `Authorization: Bearer <token>` header. Token scopes can be restricted to specific models or operations.
+## Localization
 
-## API Playground
+Locale values (e.g., `en`, `de`, `es`) are passed as the `locales` argument on queries. The `Locale` enum is auto-generated from your project's configured locales. The `gcms-locales` HTTP header can also set locale fallback chains.
 
-Every Hygraph project includes a built-in API Playground (GraphiQL) accessible from the project dashboard. The playground supports introspection, query auto-completion, and variable input for testing queries and mutations against live project data.
-
-## Content Environments
-
-Multiple content environments (staging, production, etc.) allow teams to develop schema changes and content in isolation. Each environment exposes its own API endpoint variant.
-
-## Remote Sources & Content Federation
-
-Hygraph's Content Federation feature allows embedding remote GraphQL or REST API data as virtual fields in the Hygraph schema. Remote sources are stitched into the unified GraphQL API without data duplication.
-
-## References
-
-- API Reference: https://hygraph.com/docs/api-reference
-- GraphQL Content API Docs: https://hygraph.com/docs/api-reference/content-api
-- Management API Docs: https://hygraph.com/docs/api-reference/management-api
-- Rate Limits & API Limits: https://hygraph.com/docs/api-reference/basics/api-limits
+**References:**
+- Documentation: https://hygraph.com/docs/api-reference/content-api
+- GettingStarted: https://hygraph.com/docs
+- Management API: https://hygraph.com/docs/api-reference/management-api
+- Filtering: https://hygraph.com/docs/api-reference/content-api/filtering
+- Ordering: https://hygraph.com/docs/api-reference/content-api/ordering
+- Pagination: https://hygraph.com/docs/api-reference/content-api/pagination
+- ContentStages: https://hygraph.com/docs/api-reference/content-api/content-stages
+- Localization: https://hygraph.com/docs/api-reference/content-api/localization
+- Assets: https://hygraph.com/docs/api-reference/content-api/assets
+- GitHubOrganization: https://github.com/hygraph
