@@ -1,0 +1,21 @@
+{
+  "repo": "hygraph",
+  "feeds": [
+    {
+      "source": "https://hygraph.com/blog/feed/",
+      "feed_url": "https://hygraph.com/blog/feed/",
+      "title": "",
+      "saved": 0,
+      "method": "feed"
+    },
+    {
+      "source": "https://github.com/hygraph",
+      "feed_url": "https://github.com/hygraph",
+      "title": "",
+      "saved": 0,
+      "method": "none"
+    }
+  ],
+  "fetched": "2026-06-27T12:03:07Z",
+  "post_count": 25
+}

@@ -62,7 +62,7 @@ common:
     url: https://raw.githubusercontent.com/api-evangelist/hygraph/refs/heads/main/rate-limits/hygraph-rate-limits.md
   - type: FinOps
     url: https://raw.githubusercontent.com/api-evangelist/hygraph/refs/heads/main/finops/hygraph-finops.md
-  - type: Changelog
+  - type: ChangeLog
     url: https://hygraph.com/changelog
   - type: Learn
     url: https://hygraph.com/learn
