@@ -2,9 +2,20 @@ aid: hygraph
 name: Hygraph
 description: "GraphQL-native headless CMS (formerly GraphCMS) with content federation, content environments, webhooks, and a flexible GraphQL Content API for building headless applications."
 type: Index
-image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+accessModel:
+  pricing: unknown
+  onboarding: unknown
+  trial: false
+  try_now: false
+  public: false
+  label: Unknown
+  confidence: low
+  source: []
+  generated: '2026-07-22'
+  method: derived
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/hygraph.png
 created: '2026-06-14'
-modified: '2026-06-14'
+modified: '2026-07-25'
 url: https://raw.githubusercontent.com/api-evangelist/hygraph/refs/heads/main/apis.yml
 specificationVersion: '0.19'
 tags:
@@ -68,6 +79,9 @@ common:
     url: https://hygraph.com/changelog
   - type: Learn
     url: https://hygraph.com/learn
+  - name: MCP Server
+    url: https://hygraph.com/docs/hygraph-ai/mcp-server
+    type: MCPDocumentation
 maintainers:
   - FN: Kin Lane
     email: kin@apievangelist.com
