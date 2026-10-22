@@ -32,3 +32,16 @@
     detected: '2026-10-21'
   status: not-a-workflow
   arazzo: null
+- slug: hygraph-netlify-own
+  label: Netlify (own)
+  partner: netlify
+  partner_name: Netlify (own)
+  category: CMS
+  type: marketplace
+  marketplace: own
+  channel: partner-built
+  evidence: https://www.netlify.com/integrations/hygraph/
+  source: edge
+  relationship: platform-app
+  status: not-a-workflow
+  arazzo: null
