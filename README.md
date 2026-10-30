@@ -66,30 +66,101 @@
 
 GraphQL-native headless CMS (formerly GraphCMS) with content federation, content environments, webhooks, and a flexible GraphQL Content API for building headless applications.
 
-Hygraph enables over 50,000 teams to create, enrich, and deliver content programmatically. It is the first native GraphQL CMS and now operates as a Federated Content Platform, allowing teams to source content from any backend system and deliver it to any frontend via a unified GraphQL API.
+**Areas:** GraphQL · Headless CMS · Content Management · Content Federation · Webhook · Digital Experience
 
-- **Website:** https://hygraph.com
-- **Documentation:** https://hygraph.com/docs
-- **API Reference:** https://hygraph.com/docs/api-reference
-- **Pricing:** https://hygraph.com/pricing
-- **Blog:** https://hygraph.com/blog
-- **Changelog:** https://hygraph.com/changelog
-- **GitHub:** https://github.com/hygraph
-- **LinkedIn:** https://www.linkedin.com/company/hygraph
+## Hygraph on APIs.io
 
-## APIs
+Everything profiled for Hygraph is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/hygraph/](https://apis.io/providers/hygraph/)** — or go straight to one of the APIs or properties below.
 
-- [GraphQL Content API](https://hygraph.com/docs/api-reference/content-api) — Query and mutate content entries, assets, and federated remote sources.
-- [Management API](https://hygraph.com/docs/api-reference/management-api) — Programmatically manage project schema, models, environments, and webhooks.
+### APIs (2)
 
-## Plans
+- [Hygraph GraphQL Content API](https://apis.io/apis/hygraph/graphql-content-api/) — Native GraphQL API that auto-generates queries, mutations, and real-time subscriptions from the project content schema. Supports content federation,…
+- [Hygraph Management API](https://apis.io/apis/hygraph/management-api/) — GraphQL API for programmatically managing Hygraph project schema, content models, fields, environments, webhooks, and API tokens. Used for schema migrations…
 
-See [plans/hygraph-plans.md](plans/hygraph-plans.md) for details on Hobby (free), Growth ($199/month), and Enterprise (custom) tiers.
+### Published properties
 
-## Rate Limits
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
 
-See [rate-limits/hygraph-rate-limits.md](rate-limits/hygraph-rate-limits.md) for RPS, concurrent operation, and request size limits by plan.
+#### GraphQL (1)
 
-## FinOps
+GraphQL schemas.
 
-See [finops/hygraph-finops.md](finops/hygraph-finops.md) for cost optimization strategies and budget estimation guidance.
+- [Hygraph GraphQL API](https://apis.io/graphqls/hygraph/hygraph-graphql/)
+
+#### MCP servers (1)
+
+Model Context Protocol servers that expose the API to agents.
+
+- [hygraph](https://apis.io/servers/hygraph/hygraph/)
+
+#### Security (1)
+
+Authentication, trust centre, and vulnerability disclosure.
+
+- [Hygraph Domain Security](https://apis.io/security/hygraph/hygraph-domain-security/)
+
+## Where to find this API
+
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
+
+- [Website](https://hygraph.com)
+- [Documentation](https://hygraph.com/docs)
+- [Pricing](https://hygraph.com/pricing)
+- [Changelog](https://hygraph.com/changelog)
+- [Blog](https://hygraph.com/blog)
+- [GitHub](https://github.com/hygraph)
+
+## API Evangelist rating
+
+**Kin Score 22.2** — emerging · rubric 0.25.0 · scored 2026-10-23
+
+| Facet | Score |
+|---|---|
+| Discoverability | 60.0 |
+| Contract quality | 39.4 |
+| Contract governance | 0.0 |
+| Operational transparency | 18.4 |
+| Developer ergonomics | 11.9 |
+| Access clarity | 10.5 |
+
+**Agent readiness 42.8** — agent-ready (gated down from agent-native)
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | — |
+| Reversibility Documented | — |
+| MCP Server | verified |
+| Auth Clarity | served (partial credit) |
+| Idempotency | — |
+| Error Semantics | — |
+| OpenAPI Examples | — |
+| Rate Limit Signal | documented (partial credit) |
+| Event Surface Described | — |
+| Agent Skills | — |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | served (partial credit) |
+| Protected Resource Metadata | verified |
+| Dynamic Client Registration | yes |
+| Agentic Commerce | — |
+| Pagination Ratio | na |
+| Operation Distinctiveness | na |
+
+**Regulatory alignment 11.8** — Horizontal (data, software, accessibility, platform)
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/hygraph/](https://apis.io/providers/hygraph/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for Hygraph: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/hygraph/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
